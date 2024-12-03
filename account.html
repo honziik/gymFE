@@ -22,7 +22,7 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="mainNav">
           <li class="nav-item">
             <a class="nav-link fs-4" href="news.html">NEWS</a>
           </li>
@@ -60,7 +60,7 @@
         <div class="card mb-4">
           <div class="card-body">
             <h3 class="card-title mb-4">Transaction History</h3>
-
+        
             <div class="table-responsive">
               <table class="table table-striped table-hover">
                 <thead>
@@ -71,32 +71,14 @@
                     <th scope="col">Balance After</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <!-- Ukázkové transakce -->
-                  <tr>
-                    <td>2023-10-15</td>
-                    <td>Deposit</td>
-                    <td class="text-success">+ $500.00</td>
-                    <td>$1,250.00</td>
-                  </tr>
-                  <tr>
-                    <td>2023-10-10</td>
-                    <td>Withdrawal</td>
-                    <td class="text-danger">- $150.00</td>
-                    <td>$750.00</td>
-                  </tr>
-                  <tr>
-                    <td>2023-10-05</td>
-                    <td>Deposit</td>
-                    <td class="text-success">+ $400.00</td>
-                    <td>$900.00</td>
-                  </tr>
+                <tbody id="transactionTableBody">
+                  <!-- Transactions will be dynamically added here -->
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-
+        
         <div class="card mb-4">
           <div class="card-body">
             <h3 class="card-title">Change Password</h3>
@@ -135,6 +117,7 @@
       window.location.href = 'index.html';
     }
   };
+
   document.addEventListener("DOMContentLoaded", function () {
     const logresp = localStorage.getItem('logresp');
     if (logresp) {
@@ -183,5 +166,69 @@
       document.getElementById('responseMessage').classList.add('text-danger');
     }
 
+  });
+
+  document.addEventListener("DOMContentLoaded", async () => {
+  const transactionTableBody = document.getElementById("transactionTableBody");
+  const userEmail = JSON.parse(localStorage.getItem("logresp")).email;
+
+  if (!userEmail) {
+    transactionTableBody.innerHTML = `
+      <tr>
+        <td colspan="4" class="text-center text-warning">User email not found. Please log in again.</td>
+      </tr>`;
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:8080/getTransactions?email=${encodeURIComponent(userEmail)}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch transactions");
+    }
+
+    const transactions = await response.json();
+
+    if (transactions.length === 0) {
+      transactionTableBody.innerHTML = `
+        <tr>
+          <td colspan="4" class="text-center text-info">No transactions found for this user.</td>
+        </tr>`;
+    } else {
+      let balance = 0; 
+      transactionTableBody.innerHTML = transactions
+        .map(transaction => {
+          balance += transaction.amount;
+          return `
+            <tr>
+              <td>${transaction.date}</td>
+              <td>${transaction.description}</td>
+              <td class="${transaction.amount >= 0 ? 'text-success' : 'text-danger'}">
+                ${transaction.amount >= 0 ? '+ $' : '- $'}${Math.abs(transaction.amount).toFixed(2)}
+              </td>
+              <td>$${balance.toFixed(2)}</td>
+            </tr>`;
+        })
+        .join("");
+    }
+  } catch (error) {
+    console.error(error);
+    transactionTableBody.innerHTML = `
+      <tr>
+        <td colspan="4" class="text-center text-danger">An error occurred while fetching transactions. Please try again later.</td>
+      </tr>`;
+  }
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const userLogin = JSON.parse(localStorage.getItem("logresp")); // Assuming this contains login info
+    const mainNav = document.getElementById("mainNav");
+
+    if (userLogin && userLogin.login === "admin") {
+      const adminLink = document.createElement("li");
+      adminLink.className = "nav-item";
+      adminLink.innerHTML = `<a class="nav-link fs-4" href="members.html">MEMBERS</a>`;
+      mainNav.appendChild(adminLink); // Add the link dynamically
+    }
   });
 </script>

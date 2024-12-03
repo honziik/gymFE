@@ -18,7 +18,7 @@
       </button>
 
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" id="mainNav">
           <li class="nav-item">
             <a class="nav-link fs-4" href="news.html">NEWS </a>
           </li>
@@ -89,6 +89,18 @@
     }
 
     window.onload = loadNews;
+
+    document.addEventListener("DOMContentLoaded", () => {
+    const userLogin = JSON.parse(localStorage.getItem("logresp"));
+    const mainNav = document.getElementById("mainNav");
+
+    if (userLogin && userLogin.login === "admin") {
+      const adminLink = document.createElement("li");
+      adminLink.className = "nav-item";
+      adminLink.innerHTML = `<a class="nav-link fs-4" href="members.html">MEMBERS</a>`;
+      mainNav.appendChild(adminLink); // Add the link dynamically
+    }
+  });
   </script>
 </body>
 </html>
