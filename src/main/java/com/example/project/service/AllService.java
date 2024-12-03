@@ -7,6 +7,7 @@ import com.example.project.repository.entities.Class;
 import com.example.project.repository.entities.*;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -18,14 +19,20 @@ public class AllService {
     private final ClassRepository classRepository;
     private final NewsRepository newsRepository;
     private final EntryRepository entryRepository;
+    private final TransactionRepository transactionRepository;
+    private final MembershipRepository membershipRepository;
+    private final UserMembershipRepository userMembershipRepository;
 
-    public AllService(UsersRepository usersRepository, RoleRepository roleRepository, RoomRepository roomRepository, ClassRepository classRepository, NewsRepository newsRepository, EntryRepository entryRepository) {
+    public AllService(UsersRepository usersRepository, RoleRepository roleRepository, RoomRepository roomRepository, ClassRepository classRepository, NewsRepository newsRepository, EntryRepository entryRepository, TransactionRepository transactionRepository, MembershipRepository membershipRepository, UserMembershipRepository userMembershipRepository) {
         this.usersRepository = usersRepository;
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
         this.classRepository = classRepository;
         this.newsRepository = newsRepository;
         this.entryRepository = entryRepository;
+        this.transactionRepository = transactionRepository;
+        this.membershipRepository = membershipRepository;
+        this.userMembershipRepository = userMembershipRepository;
     }
 
     public UserDto getUser(final String login, final String password) {
@@ -33,6 +40,11 @@ public class AllService {
         if (!Objects.equals(users.getPassword(), password)) {
             return null;
         }
+        return new UserDto(users.getLogin(), users.getPassword(), users.getEmail(), users.getBalance());
+    }
+
+    public UserDto getUser(final String email) {
+        Users users = usersRepository.findByEmail(email);
         return new UserDto(users.getLogin(), users.getPassword(), users.getEmail(), users.getBalance());
     }
 
@@ -106,7 +118,7 @@ public class AllService {
         List<Users> users = usersRepository.findAll();
         List<LoginEmailDto> x = new ArrayList<>();
         users.forEach(user -> {
-            x.add(new LoginEmailDto(user.getLogin(), user.getEmail(), user.getBalance()));
+            x.add(LoginEmailDto.builder().login(user.getLogin()).email(user.getEmail()).balance(user.getBalance()).build());
         });
         return x;
     }
@@ -160,8 +172,57 @@ public class AllService {
         entries.forEach(entry -> {
             String entryTimeFormatted = entry.getEntryTime().format(formatter);
             String leaveTimeFormatted = entry.getLeaveTime() != null ? entry.getLeaveTime().format(formatter) : "Still Active";
-            entryDtos.add(new EntryDto(entryTimeFormatted, leaveTimeFormatted));
+            entryDtos.add(EntryDtoFactory.createWithTimes(entryTimeFormatted, leaveTimeFormatted));
         });
         return entryDtos;
+    }
+
+    public List<TransactionDto> getTransactions(String email) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+        List<Transaction> transactions = transactionRepository.findByUserEmail(email);
+        List<TransactionDto> transactionDtos = new ArrayList<>();
+        transactions.forEach(t -> {
+            transactionDtos.add(new TransactionDto(t.getAmount(), t.getDescription(), t.getDate().format(formatter)));
+        });
+        return transactionDtos;
+    }
+
+    public UserMembership purchaseMembership(String email, Long membershipId) {
+        Users user = usersRepository.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        Membership membership = membershipRepository.findById(membershipId)
+                .orElseThrow(() -> new RuntimeException("Membership not found"));
+
+        if (user.getBalance() < membership.getPrice()) {
+            throw new RuntimeException("Insufficient balance");
+        }
+
+        user.setBalance(user.getBalance() - membership.getPrice());
+
+        LocalDateTime purchaseDate = LocalDateTime.now();
+        LocalDateTime endDate = purchaseDate.plusDays(membership.getDays());
+        Transaction transaction = new Transaction();
+        transaction.setAmount(-membership.getPrice());
+        transaction.setDescription("Withdraw");
+        transaction.setDate(LocalDateTime.now());
+        transaction.setUser(user);
+        transactionRepository.save(transaction);
+        UserMembership userMembership = new UserMembership(user, membership, purchaseDate, endDate);
+        return userMembershipRepository.save(userMembership);
+    }
+
+    // Get user memberships
+    public List<UserMembership> getUserMemberships(String email) {
+        Users user = usersRepository.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        return userMembershipRepository.findByUserId(user.getId());
+    }
+
+    public List<Membership> getAllMemberships() {
+        return membershipRepository.findAll();
     }
 }

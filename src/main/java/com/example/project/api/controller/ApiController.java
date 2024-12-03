@@ -1,13 +1,14 @@
 package com.example.project.api.controller;
 
 import com.example.project.api.dto.*;
+import com.example.project.repository.entities.Membership;
+import com.example.project.repository.entities.UserMembership;
 import com.example.project.service.AllService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.ResourceBundle;
@@ -101,12 +102,37 @@ public class ApiController {
     }
 
     @GetMapping("/getNews")
-    List<NewsDto> getNews(){
+    List<NewsDto> getNews() {
         return allService.getNews();
     }
 
     @GetMapping("/getEntries")
-    List<EntryDto> getEntries(@RequestParam String email){
+    List<EntryDto> getEntries(@RequestParam String email) {
         return allService.getEntries(email);
+    }
+
+    @GetMapping("/getTransactions")
+    List<TransactionDto> getTransactions(@RequestParam String email) {
+        return allService.getTransactions(email);
+    }
+
+    @GetMapping("memberships")
+    public List<Membership> getAllMemberships() {
+        return allService.getAllMemberships();
+    }
+
+    // Purchase a membership
+    @PostMapping("/purchase")
+    public ResponseEntity<UserDto> purchaseMembership(
+            @RequestParam String email,
+            @RequestParam Long membershipId) {
+        allService.purchaseMembership(email, membershipId);
+        return ResponseEntity.status(HttpStatus.CREATED).body(allService.getUser(email));
+    }
+
+    // Get memberships for a user
+    @GetMapping("/memberships/{email}")
+    public List<UserMembership> getUserMemberships(@PathVariable String email) {
+        return allService.getUserMemberships(email);
     }
 }

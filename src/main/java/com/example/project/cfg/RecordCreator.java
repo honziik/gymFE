@@ -19,13 +19,19 @@ public class RecordCreator implements ApplicationListener<ContextRefreshedEvent>
     private final RoleRepository roleRepository;
     private final NewsRepository newsRepository;
     private final EntryRepository entryRepository;
+    private final TransactionRepository transactionRepository;
+    private final MembershipRepository membershipRepository;
+    private final UserMembershipRepository userMembershipRepository;
 
-    public RecordCreator(RoomRepository roomRepository, UsersRepository usersRepository, RoleRepository roleRepository, NewsRepository newsRepository, EntryRepository entryRepository) {
+    public RecordCreator(RoomRepository roomRepository, UsersRepository usersRepository, RoleRepository roleRepository, NewsRepository newsRepository, EntryRepository entryRepository, TransactionRepository transactionRepository, MembershipRepository membershipRepository, UserMembershipRepository userMembershipRepository) {
         this.roomRepository = roomRepository;
         this.usersRepository = usersRepository;
         this.roleRepository = roleRepository;
         this.newsRepository = newsRepository;
         this.entryRepository = entryRepository;
+        this.transactionRepository = transactionRepository;
+        this.membershipRepository = membershipRepository;
+        this.userMembershipRepository = userMembershipRepository;
     }
 
     @Override
@@ -128,6 +134,50 @@ public class RecordCreator implements ApplicationListener<ContextRefreshedEvent>
         entry5.setLeaveTime(LocalDateTime.now().minusDays(6).plusHours(2));
         entry5.setUser(admin);
 
+        Transaction transaction1 = new Transaction();
+        transaction1.setAmount(1250);
+        transaction1.setDescription("Deposit");
+        transaction1.setDate(LocalDateTime.now().minusWeeks(3).minusHours(2));
+        transaction1.setUser(admin);
+
+        Transaction transaction2 = new Transaction();
+        transaction2.setAmount(-300);
+        transaction2.setDescription("Withdraw");
+        transaction2.setDate(LocalDateTime.now().minusWeeks(2).minusHours(10));
+        transaction2.setUser(admin);
+
+        Transaction transaction3 = new Transaction();
+        transaction3.setAmount(300);
+        transaction3.setDescription("Deposit");
+        transaction3.setDate(LocalDateTime.now().minusWeeks(1).minusHours(5));
+        transaction3.setUser(admin);
+
+        Membership membership1 = new Membership();
+        membership1.setDays(1);
+        membership1.setPrice(5);
+        membership1.setTitle("One day membership");
+
+        Membership membership2 = new Membership();
+        membership2.setDays(30);
+        membership2.setPrice(20);
+        membership2.setTitle("One month membership");
+
+        Membership membership3 = new Membership();
+        membership3.setDays(365);
+        membership3.setPrice(200);
+        membership3.setTitle("One year membership");
+
+        UserMembership userMembership1 = new UserMembership();
+        userMembership1.setUser(admin);
+        userMembership1.setMembership(membership1);
+        userMembership1.setPurchaseDate(LocalDateTime.now().minusDays(10));
+        userMembership1.setEndDate(LocalDateTime.now().minusDays(9));
+
+        UserMembership userMembership2 = new UserMembership();
+        userMembership2.setUser(admin);
+        userMembership2.setMembership(membership2);
+        userMembership2.setPurchaseDate(LocalDateTime.now());
+        userMembership2.setEndDate(LocalDateTime.now().plusDays(30));
 
         roleRepository.save(adminRole);
         roleRepository.save(userRole);
@@ -148,5 +198,16 @@ public class RecordCreator implements ApplicationListener<ContextRefreshedEvent>
         entryRepository.save(entry3);
         entryRepository.save(entry4);
         entryRepository.save(entry5);
+
+        transactionRepository.save(transaction1);
+        transactionRepository.save(transaction2);
+        transactionRepository.save(transaction3);
+
+        membershipRepository.save(membership1);
+        membershipRepository.save(membership2);
+        membershipRepository.save(membership3);
+
+        userMembershipRepository.save(userMembership1);
+        //userMembershipRepository.save(userMembership2);
     }
 }
