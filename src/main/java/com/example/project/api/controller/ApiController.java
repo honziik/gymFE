@@ -135,4 +135,9 @@ public class ApiController {
     public List<UserMembership> getUserMemberships(@PathVariable String email) {
         return allService.getUserMemberships(email);
     }
+
+    @GetMapping("/synchronize")
+    public void synchronize() {
+        allService.synchronize();
+    }
 }

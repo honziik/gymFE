@@ -1,6 +1,7 @@
-package com.example.project.repository;
+package com.example.project.repository.primary;
 
 import com.example.project.repository.entities.UserMembership;
+import com.example.project.repository.entities.UserMembershipId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

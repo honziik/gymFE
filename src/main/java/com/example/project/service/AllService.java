@@ -2,9 +2,10 @@ package com.example.project.service;
 
 import com.example.project.api.dto.*;
 import com.example.project.api.mapper.NewsMapper;
-import com.example.project.repository.*;
+import com.example.project.repository.backup.*;
 import com.example.project.repository.entities.Class;
 import com.example.project.repository.entities.*;
+import com.example.project.repository.primary.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,7 +24,18 @@ public class AllService {
     private final MembershipRepository membershipRepository;
     private final UserMembershipRepository userMembershipRepository;
 
-    public AllService(UsersRepository usersRepository, RoleRepository roleRepository, RoomRepository roomRepository, ClassRepository classRepository, NewsRepository newsRepository, EntryRepository entryRepository, TransactionRepository transactionRepository, MembershipRepository membershipRepository, UserMembershipRepository userMembershipRepository) {
+    private final BackupUsersRepository backupusersRepository;
+    private final BackupRoleRepository backuproleRepository;
+    private final BackupRoomRepository backuproomRepository;
+    private final BackupClassRepository backupclassRepository;
+    private final BackupNewsRepository backupnewsRepository;
+    private final BackupEntryRepository backupentryRepository;
+    private final BackupTransactionRepository backuptransactionRepository;
+    private final BackupMembershipRepository backupmembershipRepository;
+    private final BackupUserMembershipRepository backupuserMembershipRepository;
+
+
+    public AllService(UsersRepository usersRepository, RoleRepository roleRepository, RoomRepository roomRepository, ClassRepository classRepository, NewsRepository newsRepository, EntryRepository entryRepository, TransactionRepository transactionRepository, MembershipRepository membershipRepository, UserMembershipRepository userMembershipRepository, BackupUsersRepository backupusersRepository, BackupRoleRepository backuproleRepository, BackupRoomRepository backuproomRepository, BackupClassRepository backupclassRepository, BackupNewsRepository backupnewsRepository, BackupEntryRepository backupentryRepository, BackupTransactionRepository backuptransactionRepository, BackupMembershipRepository backupmembershipRepository, BackupUserMembershipRepository backupuserMembershipRepository) {
         this.usersRepository = usersRepository;
         this.roleRepository = roleRepository;
         this.roomRepository = roomRepository;
@@ -33,6 +45,15 @@ public class AllService {
         this.transactionRepository = transactionRepository;
         this.membershipRepository = membershipRepository;
         this.userMembershipRepository = userMembershipRepository;
+        this.backupusersRepository = backupusersRepository;
+        this.backuproleRepository = backuproleRepository;
+        this.backuproomRepository = backuproomRepository;
+        this.backupclassRepository = backupclassRepository;
+        this.backupnewsRepository = backupnewsRepository;
+        this.backupentryRepository = backupentryRepository;
+        this.backuptransactionRepository = backuptransactionRepository;
+        this.backupmembershipRepository = backupmembershipRepository;
+        this.backupuserMembershipRepository = backupuserMembershipRepository;
     }
 
     public UserDto getUser(final String login, final String password) {
@@ -224,5 +245,41 @@ public class AllService {
 
     public List<Membership> getAllMemberships() {
         return membershipRepository.findAll();
+    }
+
+    public void synchronize() {
+        List<Role> roleList = roleRepository.findAll();
+        backuproleRepository.saveAll(roleList);
+
+        List<Users> usersList = usersRepository.findAll();
+        backupusersRepository.saveAll(usersList);
+
+        // Backup Rooms
+        List<Room> roomList = roomRepository.findAll();
+        backuproomRepository.saveAll(roomList);
+
+        // Backup Classes
+        List<Class> classList = classRepository.findAll();
+        backupclassRepository.saveAll(classList);
+
+        // Backup News
+        List<News> newsList = newsRepository.findAll();
+        backupnewsRepository.saveAll(newsList);
+
+        // Backup Entries
+        List<Entry> entryList = entryRepository.findAll();
+        backupentryRepository.saveAll(entryList);
+
+        // Backup Transactions
+        List<Transaction> transactionList = transactionRepository.findAll();
+        backuptransactionRepository.saveAll(transactionList);
+
+        // Backup Memberships
+        List<Membership> membershipList = membershipRepository.findAll();
+        backupmembershipRepository.saveAll(membershipList);
+
+        // Backup User Memberships
+        List<UserMembership> userMembershipList = userMembershipRepository.findAll();
+        backupuserMembershipRepository.saveAll(userMembershipList);
     }
 }

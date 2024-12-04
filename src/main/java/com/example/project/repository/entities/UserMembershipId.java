@@ -1,4 +1,4 @@
-package com.example.project.repository;
+package com.example.project.repository.entities;
 
 import jakarta.persistence.Embeddable;
 import lombok.AllArgsConstructor;

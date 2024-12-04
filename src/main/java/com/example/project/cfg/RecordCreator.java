@@ -1,7 +1,7 @@
 package com.example.project.cfg;
 
-import com.example.project.repository.*;
 import com.example.project.repository.entities.*;
+import com.example.project.repository.primary.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationListener;

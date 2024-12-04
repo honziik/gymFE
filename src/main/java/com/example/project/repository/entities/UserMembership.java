@@ -1,6 +1,5 @@
 package com.example.project.repository.entities;
 
-import com.example.project.repository.UserMembershipId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

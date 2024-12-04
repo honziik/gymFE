@@ -1,4 +1,4 @@
-package com.example.project.repository;
+package com.example.project.repository.primary;
 
 import com.example.project.repository.entities.Users;
 import org.springframework.stereotype.Repository;
